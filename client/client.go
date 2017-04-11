@@ -14,7 +14,7 @@ func GetFlagSet() *flag.FlagSet {
 	fsClient.StringVar(&host, "host", "127.0.0.1", "Server host")
 	fsClient.UintVar(&port, "port", 9800, "Server port")
 	fsClient.StringVar(&script, "script", "", "Script name")
-	
+
 	return fsClient
 }
 
