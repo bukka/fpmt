@@ -1,23 +1,20 @@
 package client
 
 import (
-	"flag"
 	"fmt"
 )
 
-var host string
-var port uint
-var script string
-
-func GetFlagSet() *flag.FlagSet {
-	fsClient := flag.NewFlagSet("client", flag.ContinueOnError)
-	fsClient.StringVar(&host, "host", "127.0.0.1", "Server host")
-	fsClient.UintVar(&port, "port", 9800, "Server port")
-	fsClient.StringVar(&script, "script", "", "Script name")
-
-	return fsClient
+type Client struct {
+	Host   string
+	Port   uint
+	Script string
 }
 
-func Run() {
-	fmt.Println("run client")
+func (c *Client) String() string {
+	return fmt.Sprintf("{host: %s, port: %d, script: '%s'}",
+		c.Host, c.Port, c.Script)
+}
+
+func (c *Client) Run() {
+	fmt.Println("run client:", c)
 }
