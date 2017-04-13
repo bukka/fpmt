@@ -25,11 +25,16 @@ func main() {
 		fmt.Println("No argument set")
 		os.Exit(1)
 	}
+	if len(os.Args) == 2 {
+		fmt.Println("No action set")
+		os.Exit(1)
+	}
+	action := os.Args[2]
 
 	switch os.Args[1] {
 	case "client":
-		if err := fsClient.Parse(os.Args[2:]); err == nil {
-			c.Run()
+		if err := fsClient.Parse(os.Args[3:]); err == nil {
+			c.Run(action)
 			os.Exit(0)
 		}
 		fmt.Println("Error when parsing client options")

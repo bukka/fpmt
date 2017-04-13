@@ -15,6 +15,6 @@ func (c *Client) String() string {
 		c.Host, c.Port, c.Script)
 }
 
-func (c *Client) Run() {
-	fmt.Println("run client:", c)
+func (c *Client) Run(action string) {
+	fmt.Printf("Run client action '%s' with params %s\n", action, c)
 }
