@@ -11,9 +11,9 @@ import (
 func clientFlagSet() (*flag.FlagSet, *client.Client) {
 	c := &client.Client{}
 	fsClient := flag.NewFlagSet("client", flag.ContinueOnError)
-	fsClient.StringVar(&c.Host, "host", "127.0.0.1", "Server host")
-	fsClient.UintVar(&c.Port, "port", 9800, "Server port")
-	fsClient.StringVar(&c.Script, "script", "", "Script name")
+	fsClient.StringVar(&c.Host, "h", "127.0.0.1", "Server host")
+	fsClient.UintVar(&c.Port, "p", 9800, "Server port")
+	fsClient.StringVar(&c.Script, "s", "", "Script name")
 
 	return fsClient, c
 }
