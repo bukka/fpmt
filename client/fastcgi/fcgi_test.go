@@ -4,7 +4,7 @@
 // As such, the tests have been disabled to speed up
 // automated builds until they can be properly written.
 
-package fastscgi
+package fastcgi
 
 import (
 	"bytes"

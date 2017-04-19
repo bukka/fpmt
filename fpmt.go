@@ -12,7 +12,7 @@ func clientFlagSet() (*flag.FlagSet, *client.Client) {
 	c := &client.Client{}
 	fsClient := flag.NewFlagSet("client", flag.ContinueOnError)
 	fsClient.StringVar(&c.Host, "h", "127.0.0.1", "Server host")
-	fsClient.UintVar(&c.Port, "p", 9800, "Server port")
+	fsClient.StringVar(&c.Port, "p", "9012", "Server port")
 	fsClient.StringVar(&c.Script, "s", "", "Script name")
 
 	return fsClient, c
@@ -33,12 +33,16 @@ func main() {
 
 	switch os.Args[1] {
 	case "client":
-		if err := fsClient.Parse(os.Args[3:]); err == nil {
-			c.Run(action)
-			os.Exit(0)
+		if err := fsClient.Parse(os.Args[3:]); err != nil {
+			fmt.Println("Error when parsing client options")
+			os.Exit(1)
 		}
-		fmt.Println("Error when parsing client options")
-		os.Exit(1)
+
+		if err := c.Run(action); err != nil {
+			fmt.Println("Error ", err)
+			os.Exit(1)
+		}
+		os.Exit(0)
 	default:
 		fmt.Println("Unknown command")
 		os.Exit(1)
