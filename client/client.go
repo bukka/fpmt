@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/http"
 
 	"github.com/bukka/fpmt/client/fastcgi"
 )
@@ -20,7 +21,15 @@ func (c *Client) String() string {
 }
 
 func (c *Client) dial() (fcgi *fastcgi.FCGIClient, err error) {
-	return fastcgi.DialTimeout("tcp", net.JoinHostPort(c.Host, string(c.Port)), 0)
+	addr := net.JoinHostPort(c.Host, string(c.Port))
+	return fastcgi.DialTimeout("tcp", addr, 0)
+}
+
+func (c *Client) log(fcgiParams map[string]string, response *http.Response) {
+	fmt.Println("REQUEST:")
+	fmt.Println(fcgiParams)
+	fmt.Println("RESPONSE:")
+	fmt.Println(response)
 }
 
 func (c *Client) doGet() error {
@@ -35,12 +44,12 @@ func (c *Client) doGet() error {
 		return err
 	}
 	// send request
-	resp, err := fcgi.Get(fcgiParams)
+	response, err := fcgi.Get(fcgiParams)
 	if err != nil {
 		return err
 	}
-
-	fmt.Println(resp)
+	// log response
+	c.log(fcgiParams, response)
 
 	return nil
 }
