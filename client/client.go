@@ -3,6 +3,7 @@ package client
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net"
 	"net/http"
 
@@ -27,14 +28,29 @@ func (c *Client) dial() (fcgi *fastcgi.FCGIClient, err error) {
 
 func (c *Client) log(fcgiParams map[string]string, response *http.Response) {
 	fmt.Println("REQUEST:")
-	fmt.Println(fcgiParams)
+	fmt.Println("  FastCGI parameters:")
+	for k, v := range fcgiParams {
+		fmt.Printf("    %s: %v\n", k, v)
+	}
 	fmt.Println("RESPONSE:")
-	fmt.Println(response)
+	fmt.Println("  StatusCode:", response.StatusCode)
+	fmt.Println("  ContentLength:", response.ContentLength)
+	fmt.Println("  Headers:")
+	for k, v := range response.Header {
+		fmt.Printf("    %s: %v\n", k, v)
+	}
+	fmt.Println("  Body:")
+	fmt.Println("----------------")
+	defer response.Body.Close()
+	bodyBytes, err := ioutil.ReadAll(response.Body)
+	if err == nil {
+		fmt.Println(string(bodyBytes))
+	}
+	fmt.Println("----------------")
 }
 
 func (c *Client) doGet() error {
 	fcgiParams := make(map[string]string)
-	fcgiParams["REQUEST_METHOD"] = "GET"
 	fcgiParams["SERVER_PROTOCOL"] = "HTTP/1.1"
 	fcgiParams["SCRIPT_FILENAME"] = c.Script
 
