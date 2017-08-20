@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"path/filepath"
 	"net"
 	"net/http"
 
@@ -52,7 +53,7 @@ func (c *Client) log(fcgiParams map[string]string, response *http.Response) {
 func (c *Client) doGet() error {
 	fcgiParams := make(map[string]string)
 	fcgiParams["SERVER_PROTOCOL"] = "HTTP/1.1"
-	fcgiParams["SCRIPT_FILENAME"] = c.Script
+	fcgiParams["SCRIPT_FILENAME"], _ = filepath.Abs(c.Script)
 
 	// connect
 	fcgi, err := c.dial()
