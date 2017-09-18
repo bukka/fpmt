@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"path/filepath"
 	"net"
 	"net/http"
+	"path/filepath"
 
 	"github.com/bukka/fpmt/client/fastcgi"
 )

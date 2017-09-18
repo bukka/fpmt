@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/bukka/fpmt/client"
+	"github.com/bukka/fpmt/server"
 )
 
 func clientFlagSet() (*flag.FlagSet, *client.Client) {
@@ -18,8 +19,18 @@ func clientFlagSet() (*flag.FlagSet, *client.Client) {
 	return fsClient, c
 }
 
+func serverFlagSet() (*flag.FlagSet, *server.Server) {
+	s := &server.Server{}
+	fsServer := flag.NewFlagSet("server", flag.ContinueOnError)
+	fsServer.StringVar(&s.FpmBinary, "f", "/usr/local/sbin/php-fpm", "FPM binary")
+	fsServer.StringVar(&s.FpmConfig, "c", "/usr/local/etc/php-fpm.conf'", "FPM config")
+
+	return fsServer, s
+}
+
 func main() {
 	fsClient, c := clientFlagSet()
+	fsServer, s := serverFlagSet()
 
 	if len(os.Args) < 2 {
 		fmt.Println("No argument set")
@@ -39,6 +50,17 @@ func main() {
 		}
 
 		if err := c.Run(action); err != nil {
+			fmt.Println("Error ", err)
+			os.Exit(1)
+		}
+		os.Exit(0)
+	case "server":
+		if err := fsServer.Parse(os.Args[3:]); err != nil {
+			fmt.Println("Error when parsing server options")
+			os.Exit(1)
+		}
+
+		if err := s.Run(action); err != nil {
 			fmt.Println("Error ", err)
 			os.Exit(1)
 		}
