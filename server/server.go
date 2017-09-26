@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 )
 
 type Server struct {
@@ -13,7 +14,14 @@ type Server struct {
 }
 
 func (s *Server) start() error {
-	cmd := exec.Command(s.FpmBinary, "-F", "-y", s.FpmConfig)
+	var fpmBinary string
+	configPath, _ := filepath.Abs(s.FpmConfig)
+	if s.FpmBinary[0] != '/' {
+		fpmBinary = "/usr/local/sbin/" + s.FpmBinary
+	} else {
+		fpmBinary = s.FpmBinary
+	}
+	cmd := exec.Command(fpmBinary, "-F", "-y", configPath)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
