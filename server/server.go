@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path/filepath"
+	"syscall"
 )
 
 type Server struct {
@@ -24,6 +26,13 @@ func (s *Server) start() error {
 	cmd := exec.Command(fpmBinary, "-F", "-y", configPath)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+	c := make(chan os.Signal, 2)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-c
+		fmt.Printf("Sending SIGTERM to process %d\n", cmd.Process.Pid)
+		cmd.Process.Signal(syscall.SIGTERM)
+	}()
 	return cmd.Run()
 }
 
