@@ -1,29 +1,32 @@
 package client
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net"
 	"net/http"
 	"path/filepath"
+	"strings"
 
 	"github.com/bukka/fpmt/client/fastcgi"
 )
 
 type Client struct {
-	Host   string
-	Port   string
-	Script string
+	Host     string
+	Port     string
+	Script   string
+	Body     string
+	BodyType string
 }
 
 func (c *Client) String() string {
-	return fmt.Sprintf("{host: %s, port: %d, script: '%s'}",
+	return fmt.Sprintf("{host: %s, port: %s, script: '%s'}",
 		c.Host, c.Port, c.Script)
 }
 
 func (c *Client) dial() (fcgi *fastcgi.FCGIClient, err error) {
 	addr := net.JoinHostPort(c.Host, string(c.Port))
+
 	return fastcgi.DialTimeout("tcp", addr, 0)
 }
 
@@ -50,13 +53,19 @@ func (c *Client) log(fcgiParams map[string]string, response *http.Response) {
 	fmt.Println("----------------")
 }
 
-func (c *Client) doGet() error {
+func (c *Client) prepareRequest() (*fastcgi.FCGIClient, map[string]string, error) {
 	fcgiParams := make(map[string]string)
 	fcgiParams["SERVER_PROTOCOL"] = "HTTP/1.1"
 	fcgiParams["SCRIPT_FILENAME"], _ = filepath.Abs(c.Script)
 
 	// connect
 	fcgi, err := c.dial()
+
+	return fcgi, fcgiParams, err
+}
+
+func (c *Client) doGet() error {
+	fcgi, fcgiParams, err := c.prepareRequest()
 	if err != nil {
 		return err
 	}
@@ -71,11 +80,34 @@ func (c *Client) doGet() error {
 	return nil
 }
 
+func (c *Client) doPost(method string) error {
+	fcgi, fcgiParams, err := c.prepareRequest()
+	if err != nil {
+		return err
+	}
+
+	// send request
+	response, err := fcgi.Post(fcgiParams, method,
+		c.BodyType, strings.NewReader(c.Body), int64(len(c.Body)))
+	if err != nil {
+		return err
+	}
+	// log response
+	c.log(fcgiParams, response)
+
+	return nil
+}
+
+// Run the client
 func (c *Client) Run(action string) error {
 	switch action {
 	case "get":
 		return c.doGet()
+	case "post":
+		return c.doPost("POST")
+	case "put":
+		return c.doPost("PUT")
 	default:
-		return errors.New(fmt.Sprintf("Unknown action %s", action))
+		return fmt.Errorf("Unknown action %s", action)
 	}
 }

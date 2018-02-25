@@ -15,6 +15,8 @@ func clientFlagSet() (*flag.FlagSet, *client.Client) {
 	fsClient.StringVar(&c.Host, "h", "127.0.0.1", "Server host")
 	fsClient.StringVar(&c.Port, "p", "9012", "Server port")
 	fsClient.StringVar(&c.Script, "s", "", "Script name")
+	fsClient.StringVar(&c.Body, "b", "", "Body")
+	fsClient.StringVar(&c.BodyType, "t", "", "Body type")
 
 	return fsClient, c
 }
