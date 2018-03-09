@@ -108,6 +108,6 @@ func (c *Client) Run(action string) error {
 	case "put":
 		return c.doPost("PUT")
 	default:
-		return fmt.Errorf("Unknown action %s", action)
+		return fmt.Errorf("unknown action %s", action)
 	}
 }

@@ -26,6 +26,7 @@ func serverFlagSet() (*flag.FlagSet, *server.Server) {
 	fsServer := flag.NewFlagSet("server", flag.ContinueOnError)
 	fsServer.StringVar(&s.FpmBinary, "f", "/usr/local/sbin/php-fpm", "FPM binary")
 	fsServer.StringVar(&s.FpmConfig, "c", "/usr/local/etc/php-fpm.conf'", "FPM config")
+	fsServer.StringVar(&s.FpmConfigTemplate, "t", "", "FPM config template")
 
 	return fsServer, s
 }
