@@ -1,30 +1,35 @@
 package instance
 
 import (
-	"errors"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+
 	"github.com/bukka/fpmt/client"
 	"github.com/bukka/fpmt/server"
-	"github.com/hashicorp/packer/common/json"
-	"io/ioutil"
 )
 
+// ClientConfig is for configuring client parameters.
 type ClientConfig struct {
 	Host   string
 	Port   string
 	Script string
 }
 
+// ServerConfig is for configuring server parameters.
 type ServerConfig struct {
-	Executable string
-	ConfigFile string
+	Executable     string
+	ConfigFile     string
+	ConfigTemplate string
 }
 
+// Config is the main section.
 type Config struct {
 	Client ClientConfig
 	Server ServerConfig
 }
 
+// Instance is for input parameters.
 type Instance struct {
 	Spec string
 }
@@ -48,15 +53,16 @@ func transformServer(cfg ServerConfig) *server.Server {
 	return s
 }
 
+// Run the instance.
 func (i *Instance) Run() error {
 	var config Config
 	jsonSpec, err := ioutil.ReadFile(i.Spec)
 	if err != nil {
-		return errors.New(fmt.Sprintf("Invalid spec file %s", i.Spec))
+		return fmt.Errorf("Invalid spec file %s", i.Spec)
 	}
 
 	if err := json.Unmarshal(jsonSpec, &config); err != nil {
-		return errors.New(fmt.Sprintf("Invalid JSON in spec file: %s", err.Error()))
+		return fmt.Errorf("Invalid JSON in spec file: %s", err.Error())
 	}
 
 	c := transformClient(config.Client)
@@ -65,9 +71,6 @@ func (i *Instance) Run() error {
 	if err := s.Run("start"); err != nil {
 		return err
 	}
-	if err := c.Run("get"); err != nil {
-		return err
-	}
 
-	return nil
+	return c.Run("get")
 }
