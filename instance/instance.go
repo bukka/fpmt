@@ -25,8 +25,9 @@ type ServerConfig struct {
 
 // Config is the main section.
 type Config struct {
-	Client ClientConfig
-	Server ServerConfig
+	Client  ClientConfig
+	Server  ServerConfig
+	Actions []interface{}
 }
 
 // Instance is for input parameters.
