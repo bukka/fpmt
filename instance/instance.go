@@ -30,28 +30,6 @@ type Config struct {
 	Actions []interface{}
 }
 
-// Action is a single action to execute.
-type Action struct {
-	Type   string
-	Expect Expectation
-}
-
-// Expectation contains expectation for the action
-type Expectation struct {
-	Response ResponseExpectation
-	Output   StringExpectation
-}
-
-// ResponseExpectation is an expectation for the response
-type ResponseExpectation struct {
-	Body string
-}
-
-// StringExpectation is an expaction for a string.
-type StringExpectation struct {
-	Regexp string
-}
-
 // Instance is for input parameters.
 type Instance struct {
 	Spec string
