@@ -1,4 +1,4 @@
-package fpmt
+package main
 
 import (
 	"flag"
