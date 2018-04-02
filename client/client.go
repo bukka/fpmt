@@ -54,9 +54,20 @@ func (c *Client) log(fcgiParams map[string]string, response *http.Response) {
 }
 
 func (c *Client) prepareRequest() (*fastcgi.FCGIClient, map[string]string, error) {
+	script, _ := filepath.Abs(c.Script)
+	pathSegments := strings.Split(script, "?")
+	path := pathSegments[0]
+	query := ""
+	if len(pathSegments) > 1 {
+		query = pathSegments[1]
+	}
 	fcgiParams := make(map[string]string)
+	fcgiParams["DOCUMENT_URI"] = path
+	fcgiParams["QUERY_STRING"] = query
+	fcgiParams["REQUEST_URI"] = script
+	fcgiParams["SCRIPT_FILENAME"] = path
+	fcgiParams["SCRIPT_NAME"] = path
 	fcgiParams["SERVER_PROTOCOL"] = "HTTP/1.1"
-	fcgiParams["SCRIPT_FILENAME"], _ = filepath.Abs(c.Script)
 
 	// connect
 	fcgi, err := c.dial()
