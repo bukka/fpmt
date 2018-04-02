@@ -4,29 +4,30 @@ import "fmt"
 
 // Action is a generic interface for all actions
 type Action interface {
+	Type() string
 	Run() error
 }
 
 // BaseAction is a base for all actions.
 type BaseAction struct {
-	Type   string
-	Expect *Expectation
+	typeName string
+	expect   *Expectation
 }
 
 // Expectation contains expectation for the action
 type Expectation struct {
-	Response *ResponseExpectation
-	Output   *StringExpectation
+	response *ResponseExpectation
+	output   *StringExpectation
 }
 
 // ResponseExpectation is an expectation for the response
 type ResponseExpectation struct {
-	Body string
+	body string
 }
 
 // StringExpectation is an expaction for a string.
 type StringExpectation struct {
-	Regexp string
+	regexp string
 }
 
 // CreateAction creates a new action from generic record.
@@ -34,7 +35,7 @@ func CreateAction(record interface{}) (Action, error) {
 	var action BaseAction
 	switch item := record.(type) {
 	case string:
-		action = BaseAction{Type: item}
+		action = BaseAction{typeName: item}
 	case map[string]interface{}:
 		typeVal, ok := item["Type"]
 		if !ok {
@@ -52,7 +53,7 @@ func CreateAction(record interface{}) (Action, error) {
 				return nil, err
 			}
 		}
-		action = BaseAction{Type: actionType, Expect: expect}
+		action = BaseAction{typeName: actionType, expect: expect}
 	default:
 		return nil, fmt.Errorf("Invalid Action type")
 	}
@@ -83,7 +84,7 @@ func createExpectation(record interface{}) (*Expectation, error) {
 		}
 	}
 
-	return &Expectation{Response: response, Output: output}, nil
+	return &Expectation{response: response, output: output}, nil
 }
 
 func createResponseExpectation(record interface{}) (*ResponseExpectation, error) {
@@ -93,7 +94,7 @@ func createResponseExpectation(record interface{}) (*ResponseExpectation, error)
 	}
 	expectation := &ResponseExpectation{}
 	if bodyVal, ok := item["Body"]; ok {
-		expectation.Body = bodyVal
+		expectation.body = bodyVal
 	}
 
 	return expectation, nil
@@ -106,10 +107,15 @@ func createStringExpectation(record interface{}) (*StringExpectation, error) {
 	}
 	expectation := &StringExpectation{}
 	if regexpVal, ok := item["Regexp"]; ok {
-		expectation.Regexp = regexpVal
+		expectation.regexp = regexpVal
 	}
 
 	return expectation, nil
+}
+
+// Type retrieves type string of the action
+func (a BaseAction) Type() string {
+	return a.typeName
 }
 
 // Run base action
