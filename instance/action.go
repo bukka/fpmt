@@ -43,7 +43,8 @@ func CreateAction(record interface{}) (Action, error) {
 		}
 		actionType, ok := typeVal.(string)
 		if !ok {
-			return nil, fmt.Errorf("Action Type has to be a string")
+			return nil, fmt.Errorf(
+				"Action Type has to be a string and not %T", typeVal)
 		}
 		var expect *Expectation
 		if expectVal, ok := item["Expect"]; ok {
@@ -55,7 +56,7 @@ func CreateAction(record interface{}) (Action, error) {
 		}
 		action = BaseAction{typeName: actionType, expect: expect}
 	default:
-		return nil, fmt.Errorf("Invalid Action type")
+		return nil, fmt.Errorf("Invalid Action type %T", record)
 	}
 
 	return action, nil
@@ -65,7 +66,7 @@ func CreateAction(record interface{}) (Action, error) {
 func createExpectation(record interface{}) (*Expectation, error) {
 	item, ok := record.(map[string]interface{})
 	if !ok {
-		return nil, fmt.Errorf("Invalid Expect type")
+		return nil, fmt.Errorf("Invalid Expect type %T", item)
 	}
 	var err error
 	var response *ResponseExpectation
@@ -88,26 +89,39 @@ func createExpectation(record interface{}) (*Expectation, error) {
 }
 
 func createResponseExpectation(record interface{}) (*ResponseExpectation, error) {
-	item, ok := record.(map[string]string)
-	if !ok {
-		return nil, fmt.Errorf("Invalid ResponseExpectation type")
-	}
 	expectation := &ResponseExpectation{}
-	if bodyVal, ok := item["Body"]; ok {
-		expectation.body = bodyVal
+	switch item := record.(type) {
+	case string:
+		expectation.body = item
+	case map[string]interface{}:
+		if bodyVal, ok := item["Body"]; ok {
+			if bodyString, ok := bodyVal.(string); ok {
+				expectation.body = bodyString
+			} else {
+				return nil, fmt.Errorf(
+					"ResponseExpectation Body has to be a string and not %T", bodyVal)
+			}
+		}
+	default:
+		return nil, fmt.Errorf("Invalid ResponseExpectation type %T", record)
 	}
 
 	return expectation, nil
 }
 
 func createStringExpectation(record interface{}) (*StringExpectation, error) {
-	item, ok := record.(map[string]string)
+	item, ok := record.(map[string]interface{})
 	if !ok {
-		return nil, fmt.Errorf("Invalid StringExpectation type")
+		return nil, fmt.Errorf("Invalid StringExpectation type %T", record)
 	}
 	expectation := &StringExpectation{}
 	if regexpVal, ok := item["Regexp"]; ok {
-		expectation.regexp = regexpVal
+		if regexpString, ok := regexpVal.(string); ok {
+			expectation.regexp = regexpString
+		} else {
+			return nil, fmt.Errorf(
+				"StringExpectation Regext has to be a string and not %T", regexpVal)
+		}
 	}
 
 	return expectation, nil

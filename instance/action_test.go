@@ -12,15 +12,15 @@ func TestCreateAction(t *testing.T) {
 		e string
 	}{
 		{"test", BaseAction{typeName: "test"}, ""},
-		{1, nil, "Invalid Action type"},
+		{1, nil, "Invalid Action type int"},
 		{map[string]interface{}{"Type": "test"}, BaseAction{typeName: "test"}, ""},
 		{map[string]interface{}{"NoType": "test"}, nil, "Action does not have Type field"},
-		{map[string]interface{}{"Type": 1}, nil, "Action Type has to be a string"},
+		{map[string]interface{}{"Type": 1}, nil, "Action Type has to be a string and not int"},
 		{
 			map[string]interface{}{
 				"Type": "test",
 				"Expect": map[string]interface{}{
-					"Response": map[string]string{
+					"Response": map[string]interface{}{
 						"Body": "done",
 					},
 				},
@@ -30,6 +30,42 @@ func TestCreateAction(t *testing.T) {
 				expect: &Expectation{
 					response: &ResponseExpectation{
 						body: "done",
+					},
+				},
+			},
+			"",
+		},
+		{
+			map[string]interface{}{
+				"Type": "test",
+				"Expect": map[string]interface{}{
+					"Response": "done",
+				},
+			},
+			BaseAction{
+				typeName: "test",
+				expect: &Expectation{
+					response: &ResponseExpectation{
+						body: "done",
+					},
+				},
+			},
+			"",
+		},
+		{
+			map[string]interface{}{
+				"Type": "test",
+				"Expect": map[string]interface{}{
+					"Output": map[string]interface{}{
+						"Regexp": "/test/",
+					},
+				},
+			},
+			BaseAction{
+				typeName: "test",
+				expect: &Expectation{
+					output: &StringExpectation{
+						regexp: "/test/",
 					},
 				},
 			},
@@ -58,20 +94,18 @@ func TestCreateAction(t *testing.T) {
 		if table.e != "" {
 			t.Errorf("Expected error '%s' but no error returned", table.e)
 		}
-		if a.Type() != tt.Type() {
-			t.Errorf("The expected type of action is %s, instead %s returned",
-				tt.Type(), a.Type())
-		}
 		// we can cast to base action as every tested action should be that type
 		ba, ok := a.(BaseAction)
 		if !ok {
 			t.Error("The action is not a subclass of BaseAction")
 		}
 		btt := tt.(BaseAction)
+		// check type name
 		if ba.typeName != btt.typeName {
 			t.Errorf("The expected type name of action is %s, instead %s returned",
 				ba.typeName, btt.typeName)
 		}
+		// check expectation
 		if !reflect.DeepEqual(ba.expect, btt.expect) {
 			t.Errorf("The expectation %s does not match expected %s",
 				ba.expect, btt.expect)
