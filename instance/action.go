@@ -14,10 +14,21 @@ type BaseAction struct {
 	expect   *Expectation
 }
 
+// ServerAction is a base for all server action
+type ServerAction struct {
+	config ServerConfig
+	BaseAction
+}
+
+// ServerStartAction starts the server
+type ServerStartAction struct {
+	ServerAction
+}
+
 // Expectation contains expectation for the action
 type Expectation struct {
 	response *ResponseExpectation
-	output   *StringExpectation
+	output   []string
 }
 
 // ResponseExpectation is an expectation for the response
@@ -28,6 +39,22 @@ type ResponseExpectation struct {
 // StringExpectation is an expaction for a string.
 type StringExpectation struct {
 	regexp string
+}
+
+type actionMappingItem struct {
+	instance           *BaseAction
+	defaultExpectation *Expectation
+}
+
+var actionMapping = map[string]actionMappingItem{
+	"server-start": actionMappingItem{
+		defaultExpectation: &Expectation{
+			output: []string{
+				"{{date}} NOTICE: {{app}} is running, pid {{pid}}",
+				"{{date}} NOTICE: ready to handle connections",
+			},
+		},
+	},
 }
 
 // CreateAction creates a new action from generic record.
@@ -59,7 +86,7 @@ func CreateAction(record interface{}) (Action, error) {
 		return nil, fmt.Errorf("Invalid Action type %T", record)
 	}
 
-	return action, nil
+	return &action, nil
 }
 
 // Create an expectation
@@ -77,12 +104,13 @@ func createExpectation(record interface{}) (*Expectation, error) {
 		}
 	}
 
-	var output *StringExpectation
+	var output []string
 	if outputVal, ok := item["Output"]; ok {
-		output, err = createStringExpectation(outputVal)
-		if err != nil {
-			return nil, err
+		outputArray, ok := outputVal.([]string)
+		if !ok {
+			return nil, fmt.Errorf("The output has to be an array of strings and not %T", outputVal)
 		}
+		output = outputArray
 	}
 
 	return &Expectation{response: response, output: output}, nil
