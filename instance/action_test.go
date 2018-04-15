@@ -11,9 +11,9 @@ func TestCreateAction(t *testing.T) {
 		t Action
 		e string
 	}{
-		{"test", BaseAction{typeName: "test"}, ""},
+		{"test", &BaseAction{typeName: "test"}, ""},
 		{1, nil, "Invalid Action type int"},
-		{map[string]interface{}{"Type": "test"}, BaseAction{typeName: "test"}, ""},
+		{map[string]interface{}{"Type": "test"}, &BaseAction{typeName: "test"}, ""},
 		{map[string]interface{}{"NoType": "test"}, nil, "Action does not have Type field"},
 		{map[string]interface{}{"Type": 1}, nil, "Action Type has to be a string and not int"},
 		{
@@ -25,7 +25,7 @@ func TestCreateAction(t *testing.T) {
 					},
 				},
 			},
-			BaseAction{
+			&BaseAction{
 				typeName: "test",
 				expect: &Expectation{
 					response: &ResponseExpectation{
@@ -42,7 +42,7 @@ func TestCreateAction(t *testing.T) {
 					"Response": "done",
 				},
 			},
-			BaseAction{
+			&BaseAction{
 				typeName: "test",
 				expect: &Expectation{
 					response: &ResponseExpectation{
@@ -56,16 +56,16 @@ func TestCreateAction(t *testing.T) {
 			map[string]interface{}{
 				"Type": "test",
 				"Expect": map[string]interface{}{
-					"Output": map[string]interface{}{
-						"Regexp": "/test/",
+					"Output": []string{
+						"NOTICE: starting",
 					},
 				},
 			},
-			BaseAction{
+			&BaseAction{
 				typeName: "test",
 				expect: &Expectation{
-					output: &StringExpectation{
-						regexp: "/test/",
+					output: []string{
+						"NOTICE: starting",
 					},
 				},
 			},
@@ -95,11 +95,11 @@ func TestCreateAction(t *testing.T) {
 			t.Errorf("Expected error '%s' but no error returned", table.e)
 		}
 		// we can cast to base action as every tested action should be that type
-		ba, ok := a.(BaseAction)
+		ba, ok := a.(*BaseAction)
 		if !ok {
 			t.Error("The action is not a subclass of BaseAction")
 		}
-		btt := tt.(BaseAction)
+		btt := tt.(*BaseAction)
 		// check type name
 		if ba.typeName != btt.typeName {
 			t.Errorf("The expected type name of action is %s, instead %s returned",

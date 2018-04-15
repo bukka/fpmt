@@ -36,11 +36,6 @@ type ResponseExpectation struct {
 	body string
 }
 
-// StringExpectation is an expaction for a string.
-type StringExpectation struct {
-	regexp string
-}
-
 type actionMappingItem struct {
 	instance           *BaseAction
 	defaultExpectation *Expectation
@@ -132,24 +127,6 @@ func createResponseExpectation(record interface{}) (*ResponseExpectation, error)
 		}
 	default:
 		return nil, fmt.Errorf("Invalid ResponseExpectation type %T", record)
-	}
-
-	return expectation, nil
-}
-
-func createStringExpectation(record interface{}) (*StringExpectation, error) {
-	item, ok := record.(map[string]interface{})
-	if !ok {
-		return nil, fmt.Errorf("Invalid StringExpectation type %T", record)
-	}
-	expectation := &StringExpectation{}
-	if regexpVal, ok := item["Regexp"]; ok {
-		if regexpString, ok := regexpVal.(string); ok {
-			expectation.regexp = regexpString
-		} else {
-			return nil, fmt.Errorf(
-				"StringExpectation Regext has to be a string and not %T", regexpVal)
-		}
 	}
 
 	return expectation, nil
