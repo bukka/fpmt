@@ -23,11 +23,16 @@ type ServerConfig struct {
 	ConfigTemplate string
 }
 
+// SettingsConfig wraps all settings
+type SettingsConfig struct {
+	Client ClientConfig
+	Server ServerConfig
+}
+
 // Config is the main section.
 type Config struct {
-	Client  ClientConfig
-	Server  ServerConfig
-	Actions []interface{}
+	Settings SettingsConfig
+	Actions  []interface{}
 }
 
 // Instance is for input parameters.
@@ -66,8 +71,8 @@ func (i *Instance) Run() error {
 		return fmt.Errorf("Invalid JSON in spec file: %s", err.Error())
 	}
 
-	c := transformClient(config.Client)
-	s := transformServer(config.Server)
+	c := transformClient(config.Settings.Client)
+	s := transformServer(config.Settings.Server)
 
 	if err := s.Run("start"); err != nil {
 		return err
