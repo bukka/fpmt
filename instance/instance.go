@@ -4,16 +4,18 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-
-	"github.com/bukka/fpmt/client"
-	"github.com/bukka/fpmt/server"
 )
 
-// ClientConfig is for configuring client parameters.
-type ClientConfig struct {
-	Host   string
-	Port   string
-	Script string
+// ConnectionConfig sets connection parameters
+type ConnectionConfig struct {
+	Host string
+	Port string
+}
+
+// RequestConfig is for configuring request parameters.
+type RequestConfig struct {
+	Connection string
+	Script     string
 }
 
 // ServerConfig is for configuring server parameters.
@@ -25,8 +27,9 @@ type ServerConfig struct {
 
 // SettingsConfig wraps all settings
 type SettingsConfig struct {
-	Client ClientConfig
-	Server ServerConfig
+	Connection ConnectionConfig
+	Request    RequestConfig
+	Server     ServerConfig
 }
 
 // Config is the main section.
@@ -40,28 +43,10 @@ type Instance struct {
 	Spec string
 }
 
-func transformClient(cfg ClientConfig) *client.Client {
-	c := &client.Client{
-		Host:   cfg.Host,
-		Port:   cfg.Port,
-		Script: cfg.Script,
-	}
-
-	return c
-}
-
-func transformServer(cfg ServerConfig) *server.Server {
-	s := &server.Server{
-		FpmBinary: cfg.Executable,
-		FpmConfig: cfg.ConfigFile,
-	}
-
-	return s
-}
-
 // Run the instance.
 func (i *Instance) Run() error {
 	var config Config
+	var settings *Settings
 	jsonSpec, err := ioutil.ReadFile(i.Spec)
 	if err != nil {
 		return fmt.Errorf("Invalid spec file %s", i.Spec)
@@ -70,13 +55,19 @@ func (i *Instance) Run() error {
 	if err := json.Unmarshal(jsonSpec, &config); err != nil {
 		return fmt.Errorf("Invalid JSON in spec file: %s", err.Error())
 	}
-
-	c := transformClient(config.Settings.Client)
-	s := transformServer(config.Settings.Server)
-
-	if err := s.Run("start"); err != nil {
+	if settings, err = CreateSettings(&config.Settings); err != nil {
 		return err
 	}
 
-	return c.Run("get")
+	for _, actionConfig := range config.Actions {
+		action, err := CreateAction(actionConfig)
+		if err != nil {
+			return err
+		}
+		if err := action.Run(settings); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

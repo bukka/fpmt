@@ -5,7 +5,7 @@ import "fmt"
 // Action is a generic interface for all actions
 type Action interface {
 	Type() string
-	Run() error
+	Run(s *Settings) error
 }
 
 // BaseAction is a base for all actions.
@@ -138,7 +138,7 @@ func (a BaseAction) Type() string {
 }
 
 // Run base action
-func (a BaseAction) Run() error {
+func (a BaseAction) Run(s *Settings) error {
 	fmt.Print("BaseAction run")
 	return nil
 }
