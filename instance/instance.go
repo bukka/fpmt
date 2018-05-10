@@ -10,6 +10,7 @@ import (
 type ConnectionConfig struct {
 	Host string
 	Port string
+	Path string
 }
 
 // RequestConfig is for configuring request parameters.
@@ -27,9 +28,11 @@ type ServerConfig struct {
 
 // SettingsConfig wraps all settings
 type SettingsConfig struct {
-	Connection ConnectionConfig
-	Request    RequestConfig
-	Server     ServerConfig
+	Connection  ConnectionConfig
+	Connections map[string]ConnectionConfig
+	Request     RequestConfig
+	Requests    map[string]RequestConfig
+	Server      ServerConfig
 }
 
 // Config is the main section.

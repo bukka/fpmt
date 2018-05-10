@@ -6,6 +6,7 @@ import "fmt"
 type Connection struct {
 	Host string
 	Port string
+	Path string
 }
 
 // Request represent a request for connection
@@ -23,9 +24,9 @@ type Server struct {
 
 // Settings contains all settings for the actions
 type Settings struct {
-	Connection Connection
-	Request    Request
-	Server     Server
+	Connections map[string]Connection
+	Requests    map[string]Request
+	Server      Server
 }
 
 // CreateSettings creates a new settings from the config.
