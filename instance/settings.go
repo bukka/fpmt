@@ -31,5 +31,5 @@ type Settings struct {
 
 // CreateSettings creates a new settings from the config.
 func CreateSettings(sc *SettingsConfig) (*Settings, error) {
-	return nil, fmt.Errorf("Not implemented")
+	return nil, fmt.Errorf("SettingsConfig is nil")
 }

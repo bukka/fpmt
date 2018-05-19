@@ -11,7 +11,7 @@ func TestCreateSettings(t *testing.T) {
 		s *Settings
 		e string
 	}{
-		{nil, nil, ""},
+		{nil, nil, "SettingsConfig is nil"},
 	}
 
 	for _, table := range tables {
