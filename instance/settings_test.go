@@ -12,6 +12,18 @@ func TestCreateSettings(t *testing.T) {
 		e string
 	}{
 		{nil, nil, "SettingsConfig is nil"},
+		{
+			&SettingsConfig{},
+			&Settings{
+				Connections: map[string]Connection{},
+				Requests:    map[string]Request{},
+				Server: Server{
+					ConfigTemplate: "php-fpm.tmpl",
+					Executable:     "/usr/local/sbin/php-fpm",
+				},
+			},
+			"",
+		},
 	}
 
 	for _, table := range tables {

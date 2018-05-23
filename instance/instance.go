@@ -28,11 +28,11 @@ type ServerConfig struct {
 
 // SettingsConfig wraps all settings
 type SettingsConfig struct {
-	Connection  ConnectionConfig
-	Connections map[string]ConnectionConfig
-	Request     RequestConfig
-	Requests    map[string]RequestConfig
-	Server      ServerConfig
+	Connection  *ConnectionConfig
+	Connections *map[string]ConnectionConfig
+	Request     *RequestConfig
+	Requests    *map[string]RequestConfig
+	Server      *ServerConfig
 }
 
 // Config is the main section.

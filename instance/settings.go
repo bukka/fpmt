@@ -31,5 +31,20 @@ type Settings struct {
 
 // CreateSettings creates a new settings from the config.
 func CreateSettings(sc *SettingsConfig) (*Settings, error) {
-	return nil, fmt.Errorf("SettingsConfig is nil")
+	if sc == nil {
+		return nil, fmt.Errorf("SettingsConfig is nil")
+	}
+
+	server := Server{
+		ConfigTemplate: "php-fpm.tmpl",
+		ConfigFile:     "",
+		Executable:     "/usr/local/sbin/php-fpm",
+	}
+	settings := Settings{
+		Connections: map[string]Connection{},
+		Requests:    map[string]Request{},
+		Server:      server,
+	}
+
+	return &settings, nil
 }
