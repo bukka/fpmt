@@ -37,9 +37,18 @@ func CreateSettings(sc *SettingsConfig) (*Settings, error) {
 
 	server := Server{
 		ConfigTemplate: "php-fpm.tmpl",
-		ConfigFile:     "",
+		ConfigFile:     "php-fpm.conf",
 		Executable:     "/usr/local/sbin/php-fpm",
 	}
+	if srvc := sc.Server; srvc != nil {
+		if srvc.ConfigFile != "" {
+			server.ConfigFile = srvc.ConfigFile
+		}
+		if srvc.ConfigTemplate != "" {
+			server.ConfigTemplate = srvc.ConfigTemplate
+		}
+	}
+
 	settings := Settings{
 		Connections: map[string]Connection{},
 		Requests:    map[string]Request{},

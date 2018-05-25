@@ -18,7 +18,26 @@ func TestCreateSettings(t *testing.T) {
 				Connections: map[string]Connection{},
 				Requests:    map[string]Request{},
 				Server: Server{
+					ConfigFile:     "php-fpm.conf",
 					ConfigTemplate: "php-fpm.tmpl",
+					Executable:     "/usr/local/sbin/php-fpm",
+				},
+			},
+			"",
+		},
+		{
+			&SettingsConfig{
+				Server: &ServerConfig{
+					ConfigFile:     "fpm.conf",
+					ConfigTemplate: "fpm.tmpl",
+				},
+			},
+			&Settings{
+				Connections: map[string]Connection{},
+				Requests:    map[string]Request{},
+				Server: Server{
+					ConfigFile:     "fpm.conf",
+					ConfigTemplate: "fpm.tmpl",
 					Executable:     "/usr/local/sbin/php-fpm",
 				},
 			},
