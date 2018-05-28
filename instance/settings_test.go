@@ -43,6 +43,23 @@ func TestCreateSettings(t *testing.T) {
 			},
 			"",
 		},
+		{
+			&SettingsConfig{
+				Server: &ServerConfig{
+					Executable: "/usr/local/sbin/php-fpmi",
+				},
+			},
+			&Settings{
+				Connections: map[string]Connection{},
+				Requests:    map[string]Request{},
+				Server: Server{
+					ConfigFile:     "php-fpm.conf",
+					ConfigTemplate: "php-fpm.tmpl",
+					Executable:     "/usr/local/sbin/php-fpmi",
+				},
+			},
+			"",
+		},
 	}
 
 	for _, table := range tables {

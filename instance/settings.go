@@ -47,6 +47,9 @@ func CreateSettings(sc *SettingsConfig) (*Settings, error) {
 		if srvc.ConfigTemplate != "" {
 			server.ConfigTemplate = srvc.ConfigTemplate
 		}
+		if srvc.Executable != "" {
+			server.Executable = srvc.Executable
+		}
 	}
 
 	settings := Settings{
