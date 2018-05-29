@@ -35,6 +35,56 @@ func CreateSettings(sc *SettingsConfig) (*Settings, error) {
 		return nil, fmt.Errorf("SettingsConfig is nil")
 	}
 
+	server, err := createServer(sc)
+	if err != nil {
+		return nil, err
+	}
+	conns, err := createConnections(sc)
+	if err != nil {
+		return nil, err
+	}
+	reqs, err := createRequests(sc, conns)
+	if err != nil {
+		return nil, err
+	}
+
+	settings := Settings{
+		Connections: conns,
+		Requests:    reqs,
+		Server:      server,
+	}
+
+	return &settings, nil
+}
+
+func createConnections(sc *SettingsConfig) (map[string]Connection, error) {
+	if sc.Connection == nil {
+		return map[string]Connection{}, nil
+	}
+	conn := Connection{
+		Host: "127.0.0.1",
+	}
+	if sc.Connection.Port != "" {
+		conn.Port = sc.Connection.Port
+	}
+	return map[string]Connection{"default": conn}, nil
+}
+
+func createRequests(sc *SettingsConfig, conns map[string]Connection) (map[string]Request, error) {
+	if sc.Request == nil {
+		return map[string]Request{}, nil
+	}
+	conn := conns["default"]
+	req := Request{
+		Connection: &conn,
+	}
+	if sc.Request.Script != "" {
+		req.Script = sc.Request.Script
+	}
+	return map[string]Request{"default": req}, nil
+}
+
+func createServer(sc *SettingsConfig) (Server, error) {
 	server := Server{
 		ConfigTemplate: "php-fpm.tmpl",
 		ConfigFile:     "php-fpm.conf",
@@ -52,11 +102,5 @@ func CreateSettings(sc *SettingsConfig) (*Settings, error) {
 		}
 	}
 
-	settings := Settings{
-		Connections: map[string]Connection{},
-		Requests:    map[string]Request{},
-		Server:      server,
-	}
-
-	return &settings, nil
+	return server, nil
 }
