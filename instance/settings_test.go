@@ -93,6 +93,43 @@ func TestCreateSettings(t *testing.T) {
 			},
 			"",
 		},
+		{
+			&SettingsConfig{
+				Connections: &map[string]ConnectionConfig{
+					"conn": ConnectionConfig{
+						Host: "192.168.1.137",
+						Port: "9091",
+					},
+				},
+				Request: &RequestConfig{
+					Connection: "conn",
+					Script:     "testx.php",
+				},
+			},
+			&Settings{
+				Connections: map[string]Connection{
+					"conn": Connection{
+						Host: "192.168.1.137",
+						Port: "9091",
+					},
+				},
+				Requests: map[string]Request{
+					"default": Request{
+						Connection: &Connection{
+							Host: "192.168.1.137",
+							Port: "9091",
+						},
+						Script: "testx.php",
+					},
+				},
+				Server: Server{
+					ConfigFile:     "php-fpm.conf",
+					ConfigTemplate: "php-fpm.tmpl",
+					Executable:     "/usr/local/sbin/php-fpm",
+				},
+			},
+			"",
+		},
 	}
 
 	for _, table := range tables {
