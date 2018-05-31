@@ -75,36 +75,55 @@ func createConnections(sc *SettingsConfig) (map[string]Connection, error) {
 }
 
 func createConnection(cc *ConnectionConfig) Connection {
-	conn := Connection{
-		Host: "127.0.0.1",
-	}
+	conn := Connection{}
 	if cc.Host != "" {
 		conn.Host = cc.Host
 	}
 	if cc.Port != "" {
 		conn.Port = cc.Port
+		if cc.Host == "" {
+			conn.Host = "127.0.0.1"
+		}
+	}
+	if cc.Path != "" {
+		conn.Path = cc.Path
 	}
 
 	return conn
 }
 
 func createRequests(sc *SettingsConfig, conns map[string]Connection) (map[string]Request, error) {
-	if sc.Request == nil {
+	if sc.Request == nil && sc.Requests == nil {
 		return map[string]Request{}, nil
 	}
+	reqs := map[string]Request{}
+	if sc.Requests != nil {
+		for name, rc := range *sc.Requests {
+			reqs[name] = createRequest(&rc, conns)
+		}
+	}
+	if sc.Request != nil {
+		reqs["default"] = createRequest(sc.Request, conns)
+	}
+
+	return reqs, nil
+}
+
+func createRequest(rc *RequestConfig, conns map[string]Connection) Request {
 	cn := "default"
-	if sc.Request.Connection != "" {
-		cn = sc.Request.Connection
+	if rc.Connection != "" {
+		cn = rc.Connection
 	}
 
 	conn := conns[cn]
 	req := Request{
 		Connection: &conn,
 	}
-	if sc.Request.Script != "" {
-		req.Script = sc.Request.Script
+	if rc.Script != "" {
+		req.Script = rc.Script
 	}
-	return map[string]Request{"default": req}, nil
+
+	return req
 }
 
 func createServer(sc *SettingsConfig) (Server, error) {
