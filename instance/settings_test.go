@@ -184,6 +184,59 @@ func TestCreateSettings(t *testing.T) {
 			},
 			"",
 		},
+		{
+			&SettingsConfig{
+				Connection: &ConnectionConfig{
+					Path: "php-fpm.sock",
+				},
+				Connections: &map[string]ConnectionConfig{
+					"conn": ConnectionConfig{
+						Port: "9092",
+					},
+				},
+				Requests: &map[string]RequestConfig{
+					"r1": RequestConfig{
+						Connection: "conn",
+						Script:     "test1.php",
+					},
+					"r2": RequestConfig{
+						Script: "test2.php",
+					},
+				},
+			},
+			&Settings{
+				Connections: map[string]Connection{
+					"conn": Connection{
+						Host: "127.0.0.1",
+						Port: "9092",
+					},
+					"default": Connection{
+						Path: "php-fpm.sock",
+					},
+				},
+				Requests: map[string]Request{
+					"r1": Request{
+						Connection: &Connection{
+							Host: "127.0.0.1",
+							Port: "9092",
+						},
+						Script: "test1.php",
+					},
+					"r2": Request{
+						Connection: &Connection{
+							Path: "php-fpm.sock",
+						},
+						Script: "test2.php",
+					},
+				},
+				Server: Server{
+					ConfigFile:     "php-fpm.conf",
+					ConfigTemplate: "php-fpm.tmpl",
+					Executable:     "/usr/local/sbin/php-fpm",
+				},
+			},
+			"",
+		},
 	}
 
 	for _, table := range tables {
