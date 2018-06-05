@@ -99,31 +99,39 @@ func createRequests(sc *SettingsConfig, conns map[string]Connection) (map[string
 	reqs := map[string]Request{}
 	if sc.Requests != nil {
 		for name, rc := range *sc.Requests {
-			reqs[name] = createRequest(&rc, conns)
+			if err := createRequest(&rc, conns, reqs, name); err != nil {
+				return reqs, err
+			}
 		}
 	}
 	if sc.Request != nil {
-		reqs["default"] = createRequest(sc.Request, conns)
+		if err := createRequest(sc.Request, conns, reqs, "default"); err != nil {
+			return reqs, err
+		}
 	}
 
 	return reqs, nil
 }
 
-func createRequest(rc *RequestConfig, conns map[string]Connection) Request {
+func createRequest(rc *RequestConfig, conns map[string]Connection, reqs map[string]Request, name string) error {
 	cn := "default"
 	if rc.Connection != "" {
 		cn = rc.Connection
 	}
 
-	conn := conns[cn]
+	conn, ok := conns[cn]
+	if !ok {
+		return fmt.Errorf("No connection '%s' found in the Request '%s'", cn, name)
+	}
 	req := Request{
 		Connection: &conn,
 	}
 	if rc.Script != "" {
 		req.Script = rc.Script
 	}
+	reqs[name] = req
 
-	return req
+	return nil
 }
 
 func createServer(sc *SettingsConfig) (Server, error) {

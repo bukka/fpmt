@@ -237,6 +237,21 @@ func TestCreateSettings(t *testing.T) {
 			},
 			"",
 		},
+		{
+			&SettingsConfig{
+				Connection: &ConnectionConfig{
+					Path: "php-fpm.sock",
+				},
+				Requests: &map[string]RequestConfig{
+					"r1": RequestConfig{
+						Connection: "conn",
+						Script:     "test1.php",
+					},
+				},
+			},
+			nil,
+			"No connection 'conn' found in the Request 'r1'",
+		},
 	}
 
 	for _, table := range tables {
