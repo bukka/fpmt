@@ -64,17 +64,21 @@ func createConnections(sc *SettingsConfig) (map[string]Connection, error) {
 	conns := map[string]Connection{}
 	if sc.Connections != nil {
 		for name, cc := range *sc.Connections {
-			conns[name] = createConnection(&cc)
+			if err := createConnection(&cc, conns, name); err != nil {
+				return conns, err
+			}
 		}
 	}
 	if sc.Connection != nil {
-		conns["default"] = createConnection(sc.Connection)
+		if err := createConnection(sc.Connection, conns, "default"); err != nil {
+			return conns, err
+		}
 	}
 
 	return conns, nil
 }
 
-func createConnection(cc *ConnectionConfig) Connection {
+func createConnection(cc *ConnectionConfig, conns map[string]Connection, name string) error {
 	conn := Connection{}
 	if cc.Host != "" {
 		conn.Host = cc.Host
@@ -86,10 +90,14 @@ func createConnection(cc *ConnectionConfig) Connection {
 		}
 	}
 	if cc.Path != "" {
+		if conn.Port != "" {
+			return fmt.Errorf("Connection can have either path or host/port not both")
+		}
 		conn.Path = cc.Path
 	}
+	conns[name] = conn
 
-	return conn
+	return nil
 }
 
 func createRequests(sc *SettingsConfig, conns map[string]Connection) (map[string]Request, error) {

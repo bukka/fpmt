@@ -252,6 +252,16 @@ func TestCreateSettings(t *testing.T) {
 			nil,
 			"No connection 'conn' found in the Request 'r1'",
 		},
+		{
+			&SettingsConfig{
+				Connection: &ConnectionConfig{
+					Path: "php-fpm.sock",
+					Port: "9092",
+				},
+			},
+			nil,
+			"Connection can have either path or host/port not both",
+		},
 	}
 
 	for _, table := range tables {
