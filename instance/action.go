@@ -14,15 +14,10 @@ type BaseAction struct {
 	expect   *Expectation
 }
 
-// ServerAction is a base for all server action
-type ServerAction struct {
-	config ServerConfig
-	BaseAction
-}
-
 // ServerStartAction starts the server
 type ServerStartAction struct {
-	ServerAction
+	repeate int
+	BaseAction
 }
 
 // Expectation contains expectation for the action
@@ -36,9 +31,11 @@ type ResponseExpectation struct {
 	body string
 }
 
+type actionCreator func(*BaseAction, map[string]interface{}) (Action, error)
+
 type actionMappingItem struct {
-	instance           *BaseAction
 	defaultExpectation *Expectation
+	creator            actionCreator
 }
 
 var actionMapping = map[string]actionMappingItem{
@@ -49,39 +46,57 @@ var actionMapping = map[string]actionMappingItem{
 				"{{date}} NOTICE: ready to handle connections",
 			},
 		},
+		creator: func(b *BaseAction, p map[string]interface{}) (Action, error) {
+			a := ServerStartAction{}
+			a.typeName = b.typeName
+			a.expect = b.expect
+
+			return &a, nil
+		},
 	},
 }
 
 // CreateAction creates a new action from generic record.
 func CreateAction(record interface{}) (Action, error) {
-	var action BaseAction
+	var actionType string
+	var params map[string]interface{}
 	switch item := record.(type) {
 	case string:
-		action = BaseAction{typeName: item}
+		params = map[string]interface{}{}
+		params["Type"] = item
+		actionType = item
 	case map[string]interface{}:
-		typeVal, ok := item["Type"]
+		params = item
+		typeVal, ok := params["Type"]
 		if !ok {
 			return nil, fmt.Errorf("Action does not have Type field")
 		}
-		actionType, ok := typeVal.(string)
+		actionType, ok = typeVal.(string)
 		if !ok {
 			return nil, fmt.Errorf(
 				"Action Type has to be a string and not %T", typeVal)
 		}
-		var expect *Expectation
-		if expectVal, ok := item["Expect"]; ok {
-			var err error
-			expect, err = createExpectation(expectVal)
-			if err != nil {
-				return nil, err
-			}
-		}
-		action = BaseAction{typeName: actionType, expect: expect}
 	default:
 		return nil, fmt.Errorf("Invalid Action type %T", record)
 	}
 
-	return &action, nil
+	mapping, ok := actionMapping[actionType]
+	if !ok {
+		return nil, fmt.Errorf("Action type %s does not have any mapping", actionType)
+	}
+
+	var expect *Expectation
+	if expectVal, ok := params["Expect"]; ok {
+		var err error
+		expect, err = createExpectation(expectVal)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		expect = mapping.defaultExpectation
+	}
+
+	return mapping.creator(&BaseAction{typeName: actionType, expect: expect}, params)
 }
 
 // Create an expectation
@@ -140,5 +155,11 @@ func (a BaseAction) Type() string {
 // Run base action
 func (a BaseAction) Run(s *Settings) error {
 	fmt.Print("BaseAction run")
+	return nil
+}
+
+// Run base action
+func (a *ServerStartAction) Run(s *Settings) error {
+	fmt.Print("ServerStartAction run")
 	return nil
 }
