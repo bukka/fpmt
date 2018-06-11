@@ -11,25 +11,56 @@ func TestCreateAction(t *testing.T) {
 		t Action
 		e string
 	}{
-		{"test", &BaseAction{typeName: "test"}, ""},
 		{1, nil, "Invalid Action type int"},
-		{map[string]interface{}{"Type": "test"}, &BaseAction{typeName: "test"}, ""},
+		{"test", nil, "Action type test does not have any mapping"},
+		{
+			"server-start",
+			&ServerStartAction{
+				BaseAction: BaseAction{
+					typeName: "server-start",
+					expect: &Expectation{
+						output: []string{
+							"{{date}} NOTICE: {{app}} is running, pid {{pid}}",
+							"{{date}} NOTICE: ready to handle connections",
+						},
+					},
+				},
+			},
+			"",
+		},
+		{
+			map[string]interface{}{"Type": "server-start"},
+			&ServerStartAction{
+				BaseAction: BaseAction{
+					typeName: "server-start",
+					expect: &Expectation{
+						output: []string{
+							"{{date}} NOTICE: {{app}} is running, pid {{pid}}",
+							"{{date}} NOTICE: ready to handle connections",
+						},
+					},
+				},
+			},
+			"",
+		},
 		{map[string]interface{}{"NoType": "test"}, nil, "Action does not have Type field"},
 		{map[string]interface{}{"Type": 1}, nil, "Action Type has to be a string and not int"},
 		{
 			map[string]interface{}{
-				"Type": "test",
+				"Type": "server-start",
 				"Expect": map[string]interface{}{
 					"Response": map[string]interface{}{
 						"Body": "done",
 					},
 				},
 			},
-			&BaseAction{
-				typeName: "test",
-				expect: &Expectation{
-					response: &ResponseExpectation{
-						body: "done",
+			&ServerStartAction{
+				BaseAction: BaseAction{
+					typeName: "server-start",
+					expect: &Expectation{
+						response: &ResponseExpectation{
+							body: "done",
+						},
 					},
 				},
 			},
@@ -37,16 +68,18 @@ func TestCreateAction(t *testing.T) {
 		},
 		{
 			map[string]interface{}{
-				"Type": "test",
+				"Type": "server-start",
 				"Expect": map[string]interface{}{
 					"Response": "done",
 				},
 			},
-			&BaseAction{
-				typeName: "test",
-				expect: &Expectation{
-					response: &ResponseExpectation{
-						body: "done",
+			&ServerStartAction{
+				BaseAction: BaseAction{
+					typeName: "server-start",
+					expect: &Expectation{
+						response: &ResponseExpectation{
+							body: "done",
+						},
 					},
 				},
 			},
@@ -54,18 +87,39 @@ func TestCreateAction(t *testing.T) {
 		},
 		{
 			map[string]interface{}{
-				"Type": "test",
+				"Type": "server-start",
+				"Expect": map[string]interface{}{
+					"Response": "done",
+				},
+			},
+			&ServerStartAction{
+				BaseAction: BaseAction{
+					typeName: "server-start",
+					expect: &Expectation{
+						response: &ResponseExpectation{
+							body: "done",
+						},
+					},
+				},
+			},
+			"",
+		},
+		{
+			map[string]interface{}{
+				"Type": "server-start",
 				"Expect": map[string]interface{}{
 					"Output": []string{
 						"NOTICE: starting",
 					},
 				},
 			},
-			&BaseAction{
-				typeName: "test",
-				expect: &Expectation{
-					output: []string{
-						"NOTICE: starting",
+			&ServerStartAction{
+				BaseAction: BaseAction{
+					typeName: "server-start",
+					expect: &Expectation{
+						output: []string{
+							"NOTICE: starting",
+						},
 					},
 				},
 			},
@@ -94,21 +148,9 @@ func TestCreateAction(t *testing.T) {
 		if table.e != "" {
 			t.Errorf("Expected error '%s' but no error returned", table.e)
 		}
-		// we can cast to base action as every tested action should be that type
-		ba, ok := a.(*BaseAction)
-		if !ok {
-			t.Error("The action is not a subclass of BaseAction")
-		}
-		btt := tt.(*BaseAction)
-		// check type name
-		if ba.typeName != btt.typeName {
-			t.Errorf("The expected type name of action is %s, instead %s returned",
-				ba.typeName, btt.typeName)
-		}
-		// check expectation
-		if !reflect.DeepEqual(ba.expect, btt.expect) {
-			t.Errorf("The expectation %s does not match expected %s",
-				ba.expect, btt.expect)
+		// check action
+		if !reflect.DeepEqual(a, tt) {
+			t.Errorf("The action %s does not match expected %s", a, tt)
 		}
 	}
 
