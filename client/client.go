@@ -17,6 +17,7 @@ type Client struct {
 	Script   string
 	Body     string
 	BodyType string
+	Uri      string
 }
 
 func (c *Client) String() string {
@@ -55,6 +56,10 @@ func (c *Client) log(fcgiParams map[string]string, response *http.Response) {
 
 func (c *Client) prepareRequest() (*fastcgi.FCGIClient, map[string]string, error) {
 	script, _ := filepath.Abs(c.Script)
+	uri := c.Uri;
+	if uri == "" {
+		uri = script
+	}
 	pathSegments := strings.Split(script, "?")
 	path := pathSegments[0]
 	query := ""
@@ -64,9 +69,9 @@ func (c *Client) prepareRequest() (*fastcgi.FCGIClient, map[string]string, error
 	fcgiParams := make(map[string]string)
 	fcgiParams["DOCUMENT_URI"] = path
 	fcgiParams["QUERY_STRING"] = query
-	fcgiParams["REQUEST_URI"] = script
+	fcgiParams["REQUEST_URI"] = uri
 	fcgiParams["SCRIPT_FILENAME"] = path
-	fcgiParams["SCRIPT_NAME"] = path
+	fcgiParams["SCRIPT_NAME"] = uri
 	fcgiParams["SERVER_PROTOCOL"] = "HTTP/1.1"
 
 	// connect

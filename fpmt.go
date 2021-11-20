@@ -17,6 +17,7 @@ func clientFlagSet() (*flag.FlagSet, *client.Client) {
 	fsClient.StringVar(&c.Script, "s", "", "Script name")
 	fsClient.StringVar(&c.Body, "b", "", "Body")
 	fsClient.StringVar(&c.BodyType, "t", "", "Body type")
+	fsClient.StringVar(&c.Uri, "u", "", "Request URI")
 
 	return fsClient, c
 }
